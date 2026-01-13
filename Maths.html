@@ -1,0 +1,714 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>NC–8th Maths Quiz Game (Advanced)</title>
+<style>
+* { box-sizing: border-box; }
+body {
+    font-family: 'Segoe UI', Arial, sans-serif;
+    background: linear-gradient(135deg, #8EC5FC, #E0C3FC);
+    margin: 0; padding: 20px; min-height: 100vh;
+    color: #333; transition: all 0.3s;
+    direction: ltr;
+}
+body.rtl { direction: rtl; font-family: 'Segoe UI', 'Arial', sans-serif; }
+.dark-mode { background: linear-gradient(135deg, #1f1f1f, #434343); color: #eee; }
+h2 { text-align: center; color: #fff; font-size: 2rem; text-shadow: 1px 2px 4px rgba(0,0,0,0.2); }
+.section { display: flex; flex-wrap: wrap; justify-content: center; margin-top: 20px; }
+.class-box {
+    background: linear-gradient(135deg, #ffffff, #f0f9ff);
+    border-radius: 16px; box-shadow: 0 8px 20px rgba(0,0,0,0.1);
+    margin: 15px; padding: 20px; text-align: center;
+    width: 180px; cursor: pointer; transition: all 0.3s; border: 1px solid #e0e0e0;
+}
+.class-box:hover { transform: translateY(-5px) scale(1.05); }
+.class-icon { font-size: 55px; margin-bottom: 10px; }
+.chapter {
+    display: inline-block; margin: 10px; padding: 14px 24px;
+    border-radius: 10px; background: linear-gradient(135deg, #d0e6ff, #c2fbd7);
+    cursor: pointer; font-size: 18px; font-weight: 500;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1); transition: all 0.3s;
+}
+.chapter:hover { background: linear-gradient(135deg, #a8e0ca, #d0e6ff); }
+#quiz-box {
+    display: none; text-align: center; max-width: 600px; margin: 30px auto;
+    padding: 25px; background: rgba(255,255,255,0.9); backdrop-filter: blur(6px);
+    border-radius: 16px; box-shadow: 0 8px 24px rgba(0,0,0,0.15);
+}
+.rtl #quiz-box { text-align: right; }
+.question { font-size: 24px; font-weight: 600; margin-bottom: 20px; }
+.option {
+    margin: 10px; padding: 10px 20px; font-size: 18px; cursor: pointer;
+    border: none; border-radius: 8px; background: linear-gradient(135deg, #89f7fe, #66a6ff);
+    color: #fff; transition: all 0.3s;
+}
+.option:hover { background: linear-gradient(135deg, #66a6ff, #89f7fe); transform: scale(1.05); }
+.option.correct { animation: correctAnim 0.5s ease; background: #28a745; }
+.option.incorrect { animation: incorrectAnim 0.5s ease; background: #dc3545; }
+@keyframes correctAnim {
+    0% { transform: scale(1); } 50% { transform: scale(1.1); } 100% { transform: scale(1); }
+}
+@keyframes incorrectAnim {
+    0% { transform: translateX(0); } 25% { transform: translateX(-10px); }
+    50% { transform: translateX(10px); } 75% { transform: translateX(-10px); } 100% { transform: translateX(0); }
+}
+.score { font-size: 19px; margin-top: 15px; font-weight: 500; }
+button {
+    padding: 10px 20px; font-size: 17px; margin-top: 20px; border: none;
+    border-radius: 8px; background: linear-gradient(135deg, #43cea2, #185a9d);
+    color: #fff; cursor: pointer; transition: all 0.3s;
+}
+button:hover { background: linear-gradient(135deg, #185a9d, #43cea2); }
+#counter { margin-top: 15px; font-weight: 500; }
+#backBtn { margin-top: 25px; background: linear-gradient(135deg, #f857a6, #ff5858); }
+#backBtn:hover { background: linear-gradient(135deg, #ff5858, #f857a6); }
+#timer { font-size: 18px; margin: 10px; font-weight: 600; color: #d9534f; }
+#leaderboard { margin-top: 20px; text-align: left; }
+.rtl #leaderboard { text-align: right; }
+.badge { margin-top: 10px; font-size: 18px; font-weight: bold; color: #007bff; }
+select {
+    padding: 10px; font-size: 16px; margin: 10px; border-radius: 8px;
+    background: linear-gradient(135deg, #43cea2, #185a9d); color: #fff;
+    border: none; cursor: pointer;
+}
+select:hover { background: linear-gradient(135deg, #185a9d, #43cea2); }
+#review-box {
+    display: none; max-width: 600px; margin: 30px auto; padding: 25px;
+    background: rgba(255,255,255,0.9); border-radius: 16px; box-shadow: 0 8px 24px rgba(0,0,0,0.15);
+}
+#analytics-box {
+    display: none; max-width: 600px; margin: 30px auto; padding: 25px;
+    background: rgba(255,255,255,0.9); border-radius: 16px; box-shadow: 0 8px 24px rgba(0,0,0,0.15);
+}
+#langMenu {
+    display: none;
+    position: absolute;
+    background: white;
+    border: 1px solid #ccc;
+    padding: 10px;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+    z-index: 1000;
+}
+#langMenu div {
+    padding: 8px;
+    cursor: pointer;
+    transition: background 0.3s;
+}
+#langMenu div:hover {
+    background: #f0f0f0;
+}
+</style>
+</head>
+<body>
+<h2 id="title">📚 NC–8th Maths Quiz Game — Advanced</h2>
+<div style="text-align:center; position: relative;">
+  <button onclick="toggleDarkMode()" id="modeBtn">🌙 Dark/Light Mode</button>
+  <button onclick="toggleLangMenu()" id="translateBtn">🌐 Translate</button>
+  <div id="langMenu">
+    <div onclick="changeLang('hi')">🇮🇳 हिन्दी (Hindi)</div>
+    <div onclick="changeLang('en')">🇺🇸 English</div>
+    <div onclick="changeLang('ar')">🇸🇦 العربية (Arabic)</div>
+    <div onclick="changeLang('fr')">🇫🇷 Français (French)</div>
+  </div>
+  <select id="difficultySelect" onchange="updateDifficulty(this.value)">
+    <option value="easy">Easy</option>
+    <option value="medium">Medium</option>
+    <option value="hard">Hard</option>
+  </select>
+</div>
+
+<div id="class-section" class="section"></div>
+<div id="chapter-section" class="section" style="display:none;"></div>
+<div id="quiz-box">
+    <div class="question" id="question"></div>
+    <div id="options"></div>
+    <div id="timer">⏱️ Time: <span id="time">30</span> seconds</div>
+    <button onclick="nextQuestion()" id="nextBtn">Next Question</button>
+    <button onclick="endQuiz()" id="endBtn">End Quiz</button>
+    <div class="score" id="score"></div>
+    <div id="counter"></div>
+    <div class="badge" id="badge"></div>
+    <button id="backBtn" onclick="goBack()">&lt;&lt; Back to Classes</button>
+    <div id="leaderboard"></div>
+</div>
+<div id="review-box">
+    <h3>Review Incorrect Answers</h3>
+    <div id="review-content"></div>
+    <button onclick="showAnalytics()">Show Analytics</button>
+    <button onclick="goBack()">Back to Classes</button>
+</div>
+<div id="analytics-box">
+    <h3>Performance Analytics</h3>
+    <div id="analytics-content"></div>
+    <button onclick="goBack()">Back to Classes</button>
+</div>
+
+<audio id="correctSound" src="https://www.soundjay.com/buttons/sounds/button-3.mp3"></audio>
+<audio id="wrongSound" src="https://www.soundjay.com/buttons/sounds/button-10.mp3"></audio>
+
+<script>
+let score = 0, questionCount = 0, currentClass = "", currentChapter = "", currQ = {}, timeLeft, timer;
+let leaderboardData = JSON.parse(localStorage.getItem("leaderboard") || "[]");
+let language = "hi", difficulty = "easy", incorrectAnswers = [], chapterStats = {};
+let startTime;
+
+// Translations
+const translations = {
+  hi: {
+    title: "📚 NC–8th Maths Quiz Game — Advanced",
+    modeBtn: "🌙 डार्क/लाइट मोड",
+    selectClass: "कक्षा चुनें",
+    selectChap: "अध्याय चुनें",
+    nextQ: "अगला प्रश्न",
+    back: "<< वापस कक्षाएं चुनें",
+    endQuiz: "क्विज़ समाप्त करें",
+    time: "⏱️ समय",
+    timeSec: "सेकंड",
+    total: "कुल सवाल",
+    correct: "सही",
+    enterName: "अपना नाम डालें:",
+    leaderboard: "🏆 लीडरबोर्ड",
+    review: "गलत जवाबों की समीक्षा",
+    analytics: "प्रदर्शन विश्लेषण",
+    badges: {
+      beginner: "🥉 Beginner Badge!",
+      intermediate: "🥈 Intermediate Badge!",
+      genius: "🥇 Maths Genius!"
+    },
+    right: "✅ सही जवाब!",
+    wrong: "❌ गलत! सही उत्तर:",
+    timeout: "⏱ समय समाप्त! सही उत्तर:"
+  },
+  en: {
+    title: "📚 NC–8th Maths Quiz Game — Advanced",
+    modeBtn: "🌙 Dark/Light Mode",
+    selectClass: "Select Class",
+    selectChap: "Select Chapter",
+    nextQ: "Next Question",
+    back: "<< Back to Classes",
+    endQuiz: "End Quiz",
+    time: "⏱️ Time",
+    timeSec: "seconds",
+    total: "Total Questions",
+    correct: "Correct",
+    enterName: "Enter your name:",
+    leaderboard: "🏆 Leaderboard",
+    review: "Review Incorrect Answers",
+    analytics: "Performance Analytics",
+    badges: {
+      beginner: "🥉 Beginner Badge!",
+      intermediate: "🥈 Intermediate Badge!",
+      genius: "🥇 Maths Genius!"
+    },
+    right: "✅ Correct Answer!",
+    wrong: "❌ Incorrect! Correct Answer:",
+    timeout: "⏱ Time's up! Correct Answer:"
+  },
+  ar: {
+    title: "📚 لعبة اختبار الرياضيات NC–الصف الثامن — متقدم",
+    modeBtn: "🌙 الوضع الداكن/الفاتح",
+    selectClass: "اختر الصف",
+    selectChap: "اختر الفصل",
+    nextQ: "السؤال التالي",
+    back: ">> العودة إلى الصفوف",
+    endQuiz: "إنهاء الاختبار",
+    time: "⏱️ الوقت",
+    timeSec: "ثانية",
+    total: "إجمالي الأسئلة",
+    correct: "صحيح",
+    enterName: "أدخل اسمك:",
+    leaderboard: "🏆 لوحة الصدارة",
+    review: "مراجعة الإجابات الخاطئة",
+    analytics: "تحليل الأداء",
+    badges: {
+      beginner: "🥉 شارة المبتدئ!",
+      intermediate: "🥈 شارة متوسط!",
+      genius: "🥇 عبقري الرياضيات!"
+    },
+    right: "✅ إجابة صحيحة!",
+    wrong: "❌ خاطئ! الإجابة الصحيحة:",
+    timeout: "⏱ انتهى الوقت! الإجابة الصحيحة:"
+  },
+  fr: {
+    title: "📚 Jeu de quiz de mathématiques NC–8e année — Avancé",
+    modeBtn: "🌙 Mode sombre/clair",
+    selectClass: "Choisir la classe",
+    selectChap: "Choisir le chapitre",
+    nextQ: "Question suivante",
+    back: "<< Retour aux classes",
+    endQuiz: "Terminer le quiz",
+    time: "⏱️ Temps",
+    timeSec: "secondes",
+    total: "Total des questions",
+    correct: "Correct",
+    enterName: "Entrez votre nom :",
+    leaderboard: "🏆 Classement",
+    review: "Revoir les réponses incorrectes",
+    analytics: "Analyse des performances",
+    badges: {
+      beginner: "🥉 Badge Débutant !",
+      intermediate: "🥈 Badge Intermédiaire !",
+      genius: "🥇 Génie des Maths !"
+    },
+    right: "✅ Réponse correcte !",
+    wrong: "❌ Incorrect ! Réponse correcte :",
+    timeout: "⏱ Temps écoulé ! Réponse correcte :"
+  }
+};
+
+// Classes and Chapters
+const classes = [
+    {name: {hi:"NC-KG", en:"NC-KG", ar:"NC-روضة", fr:"NC-Maternelle"}, icon: "🍼", chapters: [
+      {hi:"जोड़ (+)", en:"Addition (+)", ar:"الجمع (+)", fr:"Addition (+)"}, 
+      {hi:"घटाव (-)", en:"Subtraction (-)", ar:"الطرح (-)", fr:"Soustraction (-)"}
+    ]},
+    {name: {hi:"Class 1", en:"Class 1", ar:"الصف الأول", fr:"Classe 1"}, icon: "🔢", chapters: [
+      {hi:"जोड़ (+)", en:"Addition (+)", ar:"الجمع (+)", fr:"Addition (+)"}, 
+      {hi:"घटाव (-)", en:"Subtraction (-)", ar:"الطرح (-)", fr:"Soustraction (-)"}, 
+      {hi:"गुणा (*)", en:"Multiplication (*)", ar:"الضرب (*)", fr:"Multiplication (*)"}
+    ]},
+    {name: {hi:"Class 2", en:"Class 2", ar:"الصف الثاني", fr:"Classe 2"}, icon: "📐", chapters: [
+      {hi:"जोड़ (+)", en:"Addition (+)", ar:"الجمع (+)", fr:"Addition (+)"}, 
+      {hi:"घटाव (-)", en:"Subtraction (-)", ar:"الطرح (-)", fr:"Soustraction (-)"}, 
+      {hi:"गुणा (*)", en:"Multiplication (*)", ar:"الضرب (*)", fr:"Multiplication (*)"},
+      {hi:"भाग (/)", en:"Division (/)", ar:"القسمة (/)", fr:"Division (/)"}
+    ]},
+    {name: {hi:"Class 3", en:"Class 3", ar:"الصف الثالث", fr:"Classe 3"}, icon: "📊", chapters: [
+      {hi:"जोड़ (+)", en:"Addition (+)", ar:"الجمع (+)", fr:"Addition (+)"}, 
+      {hi:"घटाव (-)", en:"Subtraction (-)", ar:"الطرح (-)", fr:"Soustraction (-)"}, 
+      {hi:"गुणा (*)", en:"Multiplication (*)", ar:"الضرب (*)", fr:"Multiplication (*)"},
+      {hi:"भाग (/)", en:"Division (/)", ar:"القسمة (/)", fr:"Division (/)"},
+      {hi:"शेषफल (%)", en:"Remainder (%)", ar:"الباقي (%)", fr:"Reste (%)"}
+    ]},
+    {name: {hi:"Class 4", en:"Class 4", ar:"الصف الرابع", fr:"Classe 4"}, icon: "📏", chapters: [
+      {hi:"जोड़ (+)", en:"Addition (+)", ar:"الجمع (+)", fr:"Addition (+)"}, 
+      {hi:"घटाव (-)", en:"Subtraction (-)", ar:"الطرح (-)", fr:"Soustraction (-)"}, 
+      {hi:"गुणा (*)", en:"Multiplication (*)", ar:"الضرب (*)", fr:"Multiplication (*)"},
+      {hi:"भाग (/)", en:"Division (/)", ar:"القسمة (/)", fr:"Division (/)"},
+      {hi:"शेषफल (%)", en:"Remainder (%)", ar:"الباقي (%)", fr:"Reste (%)"}
+    ]},
+    {name: {hi:"Class 5", en:"Class 5", ar:"الصف الخامس", fr:"Classe 5"}, icon: "📚", chapters: [
+      {hi:"जोड़ (+)", en:"Addition (+)", ar:"الجمع (+)", fr:"Addition (+)"}, 
+      {hi:"घटाव (-)", en:"Subtraction (-)", ar:"الطرح (-)", fr:"Soustraction (-)"}, 
+      {hi:"गुणा (*)", en:"Multiplication (*)", ar:"الضرب (*)", fr:"Multiplication (*)"},
+      {hi:"भाग (/)", en:"Division (/)", ar:"القسمة (/)", fr:"Division (/)"},
+      {hi:"शेषफल (%)", en:"Remainder (%)", ar:"الباقي (%)", fr:"Reste (%)"}, 
+      {hi:"भिन्न (Fractions)", en:"Fractions", ar:"الكسور", fr:"Fractions"}
+    ]},
+    {name: {hi:"Class 6", en:"Class 6", ar:"الصف السادس", fr:"Classe 6"}, icon: "🧮", chapters: [
+      {hi:"जोड़ (+)", en:"Addition (+)", ar:"الجمع (+)", fr:"Addition (+)"}, 
+      {hi:"घटाव (-)", en:"Subtraction (-)", ar:"الطرح (-)", fr:"Soustraction (-)"}, 
+      {hi:"गुणा (*)", en:"Multiplication (*)", ar:"الضرب (*)", fr:"Multiplication (*)"},
+      {hi:"भाग (/)", en:"Division (/)", ar:"القسمة (/)", fr:"Division (/)"},
+      {hi:"शेषफल (%)", en:"Remainder (%)", ar:"الباقي (%)", fr:"Reste (%)"}, 
+      {hi:"भिन्न", en:"Fractions", ar:"الكسور", fr:"Fractions"}, 
+      {hi:"प्रतिशत (%)", en:"Percentage (%)", ar:"النسبة المئوية (%)", fr:"Pourcentage (%)"}
+    ]},
+    {name: {hi:"Class 7", en:"Class 7", ar:"الصف السابع", fr:"Classe 7"}, icon: "📖", chapters: [
+      {hi:"जोड़ (+)", en:"Addition (+)", ar:"الجمع (+)", fr:"Addition (+)"}, 
+      {hi:"घटाव (-)", en:"Subtraction (-)", ar:"الطرح (-)", fr:"Soustraction (-)"}, 
+      {hi:"गुणा (*)", en:"Multiplication (*)", ar:"الضرب (*)", fr:"Multiplication (*)"},
+      {hi:"भाग (/)", en:"Division (/)", ar:"القسمة (/)", fr:"Division (/)"},
+      {hi:"शेषफल (%)", en:"Remainder (%)", ar:"الباقي (%)", fr:"Reste (%)"}, 
+      {hi:"भिन्न", en:"Fractions", ar:"الكسور", fr:"Fractions"}, 
+      {hi:"प्रतिशत (%)", en:"Percentage (%)", ar:"النسبة المئوية (%)", fr:"Pourcentage (%)"},
+      {hi:"बीजगणित (Algebra)", en:"Algebra", ar:"الجبر", fr:"Algèbre"}
+    ]},
+    {name: {hi:"Class 8", en:"Class 8", ar:"الصف الثامن", fr:"Classe 8"}, icon: "📝", chapters: [
+      {hi:"जोड़ (+)", en:"Addition (+)", ar:"الجمع (+)", fr:"Addition (+)"}, 
+      {hi:"घटाव (-)", en:"Subtraction (-)", ar:"الطرح (-)", fr:"Soustraction (-)"}, 
+      {hi:"गुणा (*)", en:"Multiplication (*)", ar:"الضرب (*)", fr:"Multiplication (*)"},
+      {hi:"भाग (/)", en:"Division (/)", ar:"القسمة (/)", fr:"Division (/)"},
+      {hi:"शेषफल (%)", en:"Remainder (%)", ar:"الباقي (%)", fr:"Reste (%)"}, 
+      {hi:"भिन्न", en:"Fractions", ar:"الكسور", fr:"Fractions"}, 
+      {hi:"प्रतिशत (%)", en:"Percentage (%)", ar:"النسبة المئوية (%)", fr:"Pourcentage (%)"},
+      {hi:"बीजगणित (Algebra)", en:"Algebra", ar:"الجبر", fr:"Algèbre"},
+      {hi:"ज्यामिति (Geometry)", en:"Geometry", ar:"الهندسة", fr:"Géométrie"}
+    ]}
+];
+
+function t(key) {
+  let ptr = translations[language];
+  let keys = key.split(".");
+  for (let k of keys) ptr = ptr[k];
+  return ptr;
+}
+
+function localizeNumber(num) {
+  if (language === "ar") {
+    const arabicNumerals = ["٠", "١", "٢", "٣", "٤", "٥", "٦", "٧", "٨", "٩"];
+    return num.toString().split("").map(digit => arabicNumerals[digit] || digit).join("");
+  }
+  return num.toString();
+}
+
+function randomInt(min, max) {
+    return Math.floor(Math.random() * (max - min + 1)) + min;
+}
+
+function showClasses() {
+    let section = document.getElementById("class-section");
+    section.innerHTML = "";
+    classes.forEach((cls) => {
+        let div = document.createElement("div");
+        div.className = "class-box";
+        div.innerHTML = `<div class="class-icon">${cls.icon}</div><b>${cls.name[language]}</b>`;
+        div.onclick = () => { showChapters(cls); };
+        section.appendChild(div);
+    });
+}
+
+function showChapters(cls) {
+    currentClass = cls.name[language];
+    document.getElementById("class-section").style.display = "none";
+    let chapterSection = document.getElementById("chapter-section");
+    chapterSection.style.display = "flex";
+    chapterSection.innerHTML = "";
+    cls.chapters.forEach((chap) => {
+        let div = document.createElement("div");
+        div.className = "chapter";
+        div.innerText = chap[language];
+        div.onclick = () => { startQuiz(chap); };
+        chapterSection.appendChild(div);
+    });
+}
+
+const chapTypeMap = {
+    "जोड़ (+)": "Addition (+)", "Addition (+)": "Addition (+)", "الجمع (+)": "Addition (+)", "Addition (+)": "Addition (+)",
+    "घटाव (-)": "Subtraction (-)", "Subtraction (-)": "Subtraction (-)", "الطرح (-)": "Subtraction (-)", "Soustraction (-)": "Subtraction (-)",
+    "गुणा (*)": "Multiplication (*)", "Multiplication (*)": "Multiplication (*)", "الضرب (*)": "Multiplication (*)", "Multiplication (*)": "Multiplication (*)",
+    "भाग (/)": "Division (/)", "Division (/)": "Division (/)", "القسمة (/)": "Division (/)", "Division (/)": "Division (/)",
+    "शेषफल (%)": "Remainder (%)", "Remainder (%)": "Remainder (%)", "الباقي (%)": "Remainder (%)", "Reste (%)": "Remainder (%)",
+    "भिन्न": "Fractions", "Fractions": "Fractions", "الكسور": "Fractions", "Fractions": "Fractions",
+    "प्रतिशत (%)": "Percentage (%)", "Percentage (%)": "Percentage (%)", "النسبة المئوية (%)": "Percentage (%)", "Pourcentage (%)": "Percentage (%)",
+    "बीजगणित (Algebra)": "Algebra", "Algebra": "Algebra", "الجبر": "Algebra", "Algèbre": "Algebra",
+    "ज्यामिति (Geometry)": "Geometry", "Geometry": "Geometry", "الهندسة": "Geometry", "Géométrie": "Geometry"
+};
+
+function generateQuestion(typeObj) {
+    let type = chapTypeMap[typeObj[language]] || typeObj[language];
+    let minA, maxA, minB, maxB, a, b, q, ans;
+    switch(type) {
+        case "Addition (+)":
+            if (difficulty === "easy") { minA = 1; maxA = 10; minB = 1; maxB = 10; }
+            else if (difficulty === "medium") { minA = 10; maxA = 50; minB = 10; maxB = 50; }
+            else { minA = 50; maxA = 200; minB = 50; maxB = 200; }
+            a = randomInt(minA, maxA); b = randomInt(minB, maxB); 
+            q = `${localizeNumber(a)} + ${localizeNumber(b)} = ?`; 
+            ans = a + b; 
+            break;
+        case "Subtraction (-)":
+            if (difficulty === "easy") { minA = 5; maxA = 20; minB = 1; maxB = 10; }
+            else if (difficulty === "medium") { minA = 20; maxA = 100; minB = 10; maxB = 50; }
+            else { minA = 100; maxA = 500; minB = 50; maxB = 200; }
+            a = randomInt(minA, maxA); b = randomInt(minB, Math.min(maxB, a - 1)); 
+            q = `${localizeNumber(a)} - ${localizeNumber(b)} = ?`; 
+            ans = a - b; 
+            break;
+        case "Multiplication (*)":
+            if (difficulty === "easy") { minA = 2; maxA = 5; minB = 2; maxB = 5; }
+            else if (difficulty === "medium") { minA = 5; maxA = 10; minB = 5; maxB = 10; }
+            else { minA = 10; maxA = 20; minB = 10; maxB = 20; }
+            a = randomInt(minA, maxA); b = randomInt(minB, maxB); 
+            q = `${localizeNumber(a)} × ${localizeNumber(b)} = ?`; 
+            ans = a * b; 
+            break;
+        case "Division (/)":
+            if (difficulty === "easy") { minB = 2; maxB = 5; minAns = 2; maxAns = 5; }
+            else if (difficulty === "medium") { minB = 3; maxB = 10; minAns = 3; maxAns = 10; }
+            else { minB = 5; maxB = 20; minAns = 5; maxAns = 20; }
+            b = randomInt(minB, maxB); ans = randomInt(minAns, maxAns); a = b * ans; 
+            q = `${localizeNumber(a)} ÷ ${localizeNumber(b)} = ?`; 
+            break;
+        case "Remainder (%)":
+            if (difficulty === "easy") { minA = 5; maxA = 20; minB = 2; maxB = 5; }
+            else if (difficulty === "medium") { minA = 20; maxA = 100; minB = 3; maxB = 10; }
+            else { minA = 100; maxA = 500; minB = 5; maxB = 20; }
+            a = randomInt(minA, maxA); b = randomInt(minB, maxB); ans = a % b; 
+            q = `${localizeNumber(a)} % ${localizeNumber(b)} = ?`; 
+            break;
+        case "Fractions":
+            if (difficulty === "easy") { minA = 1; maxA = 5; minB = 2; maxB = 5; }
+            else if (difficulty === "medium") { minA = 1; maxA = 10; minB = 2; maxB = 10; }
+            else { minA = 1; maxA = 20; minB = 2; maxB = 20; }
+            a = randomInt(minA, maxA); b = randomInt(minB, maxB); 
+            q = language === "hi" ? `${localizeNumber(a)}/${localizeNumber(b)} का मान क्या है?` :
+                language === "ar" ? `ما هي قيمة ${localizeNumber(a)}/${localizeNumber(b)}؟` :
+                language === "fr" ? `Quelle est la valeur de ${localizeNumber(a)}/${localizeNumber(b)} ?` :
+                `What is the value of ${localizeNumber(a)}/${localizeNumber(b)}?`; 
+            ans = (a / b).toFixed(2); 
+            break;
+        case "Percentage (%)":
+            if (difficulty === "easy") { minA = 10; maxA = 50; minB = 10; maxB = 50; }
+            else if (difficulty === "medium") { minA = 50; maxA = 100; minB = 20; maxB = 80; }
+            else { minA = 100; maxA = 200; minB = 10; maxB = 100; }
+            a = randomInt(minA, maxA); b = randomInt(minB / 10, maxB / 10) * 10; ans = (a * b / 100).toFixed(2); 
+            q = language === "hi" ? `${localizeNumber(b)}% का ${localizeNumber(a)} = ?` :
+                language === "ar" ? `${localizeNumber(b)}% من ${localizeNumber(a)} = ?` :
+                language === "fr" ? `${localizeNumber(b)}% de ${localizeNumber(a)} = ?` :
+                `${localizeNumber(b)}% of ${localizeNumber(a)} = ?`; 
+            break;
+        case "Algebra":
+            if (difficulty === "easy") { minA = 1; maxA = 5; minB = 1; maxB = 5; }
+            else if (difficulty === "medium") { minA = 5; maxA = 10; minB = 5; maxB = 10; }
+            else { minA = 10; maxA = 20; minB = 10; maxB = 20; }
+            a = randomInt(minA, maxA); b = randomInt(minB, maxB); 
+            q = language === "hi" ? `यदि x=${localizeNumber(a)}, तो x + ${localizeNumber(b)} = ?` :
+                language === "ar" ? `إذا كانت x=${localizeNumber(a)}، فإن x + ${localizeNumber(b)} = ?` :
+                language === "fr" ? `Si x=${localizeNumber(a)}, alors x + ${localizeNumber(b)} = ?` :
+                `If x=${localizeNumber(a)}, then x + ${localizeNumber(b)} = ?`; 
+            ans = a + b; 
+            break;
+        case "Geometry":
+            if (difficulty === "easy") { minA = 2; maxA = 5; }
+            else if (difficulty === "medium") { minA = 5; maxA = 10; }
+            else { minA = 10; maxA = 20; }
+            a = randomInt(minA, maxA); 
+            q = language === "hi" ? `एक वर्ग की भुजा ${localizeNumber(a)} सेमी है, क्षेत्रफल?` :
+                language === "ar" ? `جانب مربع ${localizeNumber(a)} سم، المساحة؟` :
+                language === "fr" ? `Un côté d'un carré est ${localizeNumber(a)} cm, aire ?` :
+                `A square side is ${localizeNumber(a)} cm, area?`;
+            ans = a * a; 
+            break;
+        default: 
+            q = "N/A"; ans = 0;
+    }
+    let options = [ans];
+    let range = difficulty === "easy" ? 5 : difficulty === "medium" ? 10 : 20;
+    while(options.length < 4) {
+        let wrong = ans + randomInt(-range, range);
+        if (!options.includes(wrong) && wrong >= 0) options.push(wrong);
+    }
+    options = options.sort(() => Math.random() - 0.5).map(opt => localizeNumber(opt));
+    return { q, options, ans };
+}
+
+function showQuestion() {
+    currQ = generateQuestion(currentChapter);
+    questionCount++;
+    document.getElementById("chapter-section").style.display = "none";
+    document.getElementById("quiz-box").style.display = "block";
+    document.getElementById("question").innerText = 
+      `${language === "hi" ? `प्रश्न` : language === "ar" ? `سؤال` : language === "fr" ? `Question` : `Q`} ${localizeNumber(questionCount)}: ${currQ.q}`;
+    let optsDiv = document.getElementById("options");
+    optsDiv.innerHTML = "";
+    currQ.options.forEach(option => {
+        let btn = document.createElement("button");
+        btn.innerText = option;
+        btn.className = "option";
+        btn.onclick = function() {
+            clearInterval(timer);
+            let timeTaken = 30 - timeLeft;
+            let points = (parseFloat(option.replace(/[\u0660-\u0669]/g, d => String.fromCharCode(d.charCodeAt(0) - 0x0660))) == currQ.ans) ? (timeTaken <= 10 ? 2 : 1) : 0;
+            if (parseFloat(option.replace(/[\u0660-\u0669]/g, d => String.fromCharCode(d.charCodeAt(0) - 0x0660))) == currQ.ans) {
+                score += points;
+                btn.classList.add("correct");
+                document.getElementById("score").innerText = t("right") + (points > 1 ? ` (+${points} points)` : "");
+                document.getElementById("correctSound").play();
+            } else {
+                btn.classList.add("incorrect");
+                document.getElementById("score").innerText = t("wrong") + ' ' + localizeNumber(currQ.ans);
+                document.getElementById("wrongSound").play();
+                incorrectAnswers.push({ question: currQ.q, selected: option, correct: localizeNumber(currQ.ans) });
+            }
+            chapterStats[currentChapter[language]] = chapterStats[currentChapter[language]] || { correct: 0, total: 0 };
+            chapterStats[currentChapter[language]].total++;
+            if (parseFloat(option.replace(/[\u0660-\u0669]/g, d => String.fromCharCode(d.charCodeAt(0) - 0x0660))) == currQ.ans) chapterStats[currentChapter[language]].correct++;
+            Array.from(optsDiv.children).forEach(b => b.disabled = true);
+            checkBadges();
+        };
+        optsDiv.appendChild(btn);
+    });
+    document.getElementById("counter").innerText = 
+      `${t("total")}: ${localizeNumber(questionCount)} | ${t("correct")}: ${localizeNumber(score)}`;
+    startTimer();
+}
+
+function startTimer() {
+    clearInterval(timer);
+    timeLeft = 30;
+    startTime = Date.now();
+    document.getElementById("time").innerText = localizeNumber(timeLeft);
+    document.getElementById("timer").innerHTML = 
+      `${t("time")}: <span id="time">${localizeNumber(timeLeft)}</span> ${t("timeSec")}`;
+    timer = setInterval(() => {
+        timeLeft--;
+        document.getElementById("time").innerText = localizeNumber(timeLeft);
+        if (timeLeft <= 0) {
+            clearInterval(timer);
+            document.getElementById("score").innerText = t("timeout") + ' ' + localizeNumber(currQ.ans);
+            document.getElementById("wrongSound").play();
+            incorrectAnswers.push({ question: currQ.q, selected: "None", correct: localizeNumber(currQ.ans) });
+            chapterStats[currentChapter[language]].total++;
+            Array.from(document.getElementById("options").children).forEach(b => b.disabled = true);
+        }
+    }, 1000);
+}
+
+function nextQuestion() {
+    clearInterval(timer);
+    showQuestion();
+}
+
+function endQuiz() {
+    clearInterval(timer);
+    saveLeaderboard();
+    document.getElementById("quiz-box").style.display = "none";
+    showReview();
+}
+
+function showReview() {
+    document.getElementById("review-box").style.display = "block";
+    let reviewDiv = document.getElementById("review-content");
+    reviewDiv.innerHTML = incorrectAnswers.length ? "" : "No incorrect answers!";
+    incorrectAnswers.forEach((item, i) => {
+        reviewDiv.innerHTML += `${localizeNumber(i + 1)}. ${item.question}<br>` +
+                               `Selected: ${item.selected} | Correct: ${item.correct}<br><br>`;
+    });
+}
+
+function showAnalytics() {
+    document.getElementById("review-box").style.display = "none";
+    document.getElementById("analytics-box").style.display = "block";
+    let analyticsDiv = document.getElementById("analytics-content");
+    analyticsDiv.innerHTML = "";
+    for (let chap in chapterStats) {
+        let { correct, total } = chapterStats[chap];
+        let accuracy = ((correct / total) * 100).toFixed(2);
+        analyticsDiv.innerHTML += `${chap}: ${correct}/${total} correct (${accuracy}%)<br>`;
+    }
+}
+
+function goBack() {
+    clearInterval(timer);
+    document.getElementById("quiz-box").style.display = "none";
+    document.getElementById("review-box").style.display = "none";
+    document.getElementById("analytics-box").style.display = "none";
+    document.getElementById("chapter-section").style.display = "none";
+    document.getElementById("class-section").style.display = "flex";
+    score = 0;
+    questionCount = 0;
+    incorrectAnswers = [];
+    chapterStats = {};
+}
+
+function startQuiz(chapter) {
+    currentChapter = chapter;
+    score = 0;
+    questionCount = 0;
+    incorrectAnswers = [];
+    showQuestion();
+}
+
+function checkBadges() {
+    if (score >= 3) document.getElementById("badge").innerText = t("badges.beginner");
+    if (score >= 5) document.getElementById("badge").innerText = t("badges.intermediate");
+    if (score >= 10) document.getElementById("badge").innerText = t("badges.genius");
+}
+
+function saveLeaderboard() {
+    let name = prompt(t("enterName"));
+    if (!name) return;
+    leaderboardData.push({ name, score });
+    leaderboardData.sort((a, b) => b.score - a.score);
+    leaderboardData = leaderboardData.slice(0, 5);
+    localStorage.setItem("leaderboard", JSON.stringify(leaderboardData));
+    showLeaderboard();
+}
+
+function showLeaderboard() {
+    let lb = document.getElementById("leaderboard");
+    lb.innerHTML = `<h3>${t("leaderboard")}</h3>`;
+    leaderboardData.forEach((p, i) => {
+        lb.innerHTML += `${localizeNumber(i + 1)}. ${p.name} - ${localizeNumber(p.score)}<br>`;
+    });
+}
+
+function toggleLangMenu() {
+    let menu = document.getElementById("langMenu");
+    menu.style.display = menu.style.display === "none" ? "block" : "none";
+}
+
+function changeLang(lang) {
+    language = lang;
+    updateUI();
+    toggleLangMenu();
+}
+
+function updateUI() {
+    document.documentElement.lang = language;
+    document.getElementById("title").innerText = t("title");
+    document.getElementById("modeBtn").innerText = t("modeBtn");
+    document.getElementById("nextBtn").innerText = t("nextQ");
+    document.getElementById("endBtn").innerText = t("endQuiz");
+    document.getElementById("backBtn").innerText = t("back");
+    if (document.getElementById("quiz-box").style.display === "block") {
+        document.getElementById("timer").innerHTML = 
+          `${t("time")}: <span id="time">${localizeNumber(timeLeft)}</span> ${t("timeSec")}`;
+        document.getElementById("counter").innerText = 
+          `${t("total")}: ${localizeNumber(questionCount)} | ${t("correct")}: ${localizeNumber(score)}`;
+        document.getElementById("question").innerText = 
+          `${language === "hi" ? `प्रश्न` : language === "ar" ? `سؤال` : language === "fr" ? `Question` : `Q`} ${localizeNumber(questionCount)}: ${currQ.q}`;
+        let optsDiv = document.getElementById("options");
+        optsDiv.innerHTML = "";
+        currQ.options.forEach(option => {
+            let btn = document.createElement("button");
+            btn.innerText = option;
+            btn.className = "option";
+            btn.onclick = function() {
+                clearInterval(timer);
+                let timeTaken = 30 - timeLeft;
+                let points = (parseFloat(option.replace(/[\u0660-\u0669]/g, d => String.fromCharCode(d.charCodeAt(0) - 0x0660))) == currQ.ans) ? (timeTaken <= 10 ? 2 : 1) : 0;
+                if (parseFloat(option.replace(/[\u0660-\u0669]/g, d => String.fromCharCode(d.charCodeAt(0) - 0x0660))) == currQ.ans) {
+                    score += points;
+                    btn.classList.add("correct");
+                    document.getElementById("score").innerText = t("right") + (points > 1 ? ` (+${points} points)` : "");
+                    document.getElementById("correctSound").play();
+                } else {
+                    btn.classList.add("incorrect");
+                    document.getElementById("score").innerText = t("wrong") + ' ' + localizeNumber(currQ.ans);
+                    document.getElementById("wrongSound").play();
+                    incorrectAnswers.push({ question: currQ.q, selected: option, correct: localizeNumber(currQ.ans) });
+                }
+                chapterStats[currentChapter[language]] = chapterStats[currentChapter[language]] || { correct: 0, total: 0 };
+                chapterStats[currentChapter[language]].total++;
+                if (parseFloat(option.replace(/[\u0660-\u0669]/g, d => String.fromCharCode(d.charCodeAt(0) - 0x0660))) == currQ.ans) chapterStats[currentChapter[language]].correct++;
+                Array.from(optsDiv.children).forEach(b => b.disabled = true);
+                checkBadges();
+            };
+            optsDiv.appendChild(btn);
+        });
+    }
+    if (document.getElementById("class-section").style.display !== "none")
+        showClasses();
+    if (document.getElementById("chapter-section").style.display !== "none" && currentClass) {
+        let idx = classes.findIndex(cls => cls.name[language] === currentClass || 
+            Object.values(cls.name).includes(currentClass));
+        showChapters(classes[idx]);
+    }
+    if (document.getElementById("review-box").style.display === "block") {
+        showReview();
+    }
+    if (document.getElementById("analytics-box").style.display === "block") {
+        showAnalytics();
+    }
+    showLeaderboard();
+    document.body.classList.toggle("rtl", language === "ar");
+}
+
+function toggleDarkMode() {
+    document.body.classList.toggle("dark-mode");
+}
+
+function updateDifficulty(diff) {
+    difficulty = diff;
+}
+
+showClasses();
+showLeaderboard();
+updateUI();
+</script>
+</body>
+</html>p
